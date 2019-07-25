@@ -9,24 +9,24 @@ namespace RzeszowBusApp
     {
         static int Main(string[] args)
         {
-            var app = new CommandLineApplication
-            {
-                Name = "asasasd.dll",
-                ThrowOnUnexpectedArgument = false
-            };
+            //var app = new CommandLineApplication
+            //{
+            //    Name = "asasasd.dll",
+            //    ThrowOnUnexpectedArgument = false
+            //};
 
-            app.HelpOption("-h|--help");
+            //app.HelpOption("-h|--help");
 
-            var optionBefore = app.Option<int>("-b|--before <N>", "asdasd", CommandOptionType.SingleValue);
-            var optionAfter = app.Option<int>("-a|--after <N>", "asdasdasd", CommandOptionType.SingleValue);
-            var optionFilter = app.Option<bool>("-f|--filter <B>", "asascascascas", CommandOptionType.SingleValue);
+            //var optionBefore = app.Option<int>("-b|--before <N>", "asdasd", CommandOptionType.SingleValue);
+            //var optionAfter = app.Option<int>("-a|--after <N>", "asdasdasd", CommandOptionType.SingleValue);
+            //var optionFilter = app.Option<bool>("-f|--filter <B>", "asascascascas", CommandOptionType.SingleValue);
 
-            app.OnExecute(async () =>
-            {
-                //var yourApp = new YourApp();
-            });
+            //app.OnExecute(async () =>
+            //{
+            //    //var yourApp = new YourApp();
+            //});
 
-            return app.Execute(args);
+            //return app.Execute(args);
 
 
 
