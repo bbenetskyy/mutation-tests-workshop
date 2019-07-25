@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using Autofac;
 using ConsoleTables;
 using McMaster.Extensions.CommandLineUtils;
 
@@ -7,7 +8,9 @@ namespace RzeszowBusApp
 {
     class Program
     {
-        static int Main(string[] args)
+        static IContainer Container { get; set; }
+
+        static void Main(string[] args)
         {
             //var app = new CommandLineApplication
             //{
@@ -29,13 +32,12 @@ namespace RzeszowBusApp
             //return app.Execute(args);
 
 
+            //var table = new ConsoleTable("one", "two", "three");
+            //table.AddRow(1, 2, 3)
+            //    .AddRow("this line should be longer", "yes it is", "oh");
 
-            var table = new ConsoleTable("one", "two", "three");
-            table.AddRow(1, 2, 3)
-                .AddRow("this line should be longer", "yes it is", "oh");
-
-            table.Write();
-            Console.WriteLine();
+            //table.Write();
+            //Console.WriteLine();
 
             //var rows = Enumerable.Repeat(new Something(), 10);
 
@@ -44,7 +46,17 @@ namespace RzeszowBusApp
             //    .Configure(o => o.NumberAlignment = Alignment.Right)
             //    .Write(Format.Alternative);
 
+            Container = ProductionBuild();
+
             Console.ReadKey();
+        }
+
+        static IContainer ProductionBuild()
+        {
+
+            var builder = new ContainerBuilder();
+            //builder.RegisterType<sss>().As<Isss>();
+            return builder.Build();
         }
     }
 }
