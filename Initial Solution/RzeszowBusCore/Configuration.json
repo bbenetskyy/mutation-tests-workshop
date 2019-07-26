@@ -1,0 +1,4 @@
+{
+  "GetBusStopList" : "http://einfo.erzeszow.pl/Home/GetBusStopList?ttId=0",
+  "GetMapBusStopList" : "http://einfo.erzeszow.pl/Home/GetMapBusStopList?ttId=0"
+}
