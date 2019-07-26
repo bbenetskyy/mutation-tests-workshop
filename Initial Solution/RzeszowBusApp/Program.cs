@@ -3,6 +3,8 @@ using System.Linq;
 using Autofac;
 using ConsoleTables;
 using McMaster.Extensions.CommandLineUtils;
+using RzeszowBusCore.Models;
+using RzeszowBusCore.Services;
 
 namespace RzeszowBusApp
 {
@@ -47,15 +49,22 @@ namespace RzeszowBusApp
             //    .Write(Format.Alternative);
 
             Container = ProductionBuild();
-
-            Console.ReadKey();
+            var config = Container.Resolve<IConfiguration>();
         }
 
         static IContainer ProductionBuild()
         {
 
             var builder = new ContainerBuilder();
-            //builder.RegisterType<sss>().As<Isss>();
+
+            builder.RegisterType<FileDataReader>().As<IFileDataReader>();
+            builder.RegisterType<MapBusLoader>().As<IMapBusLoader>();
+            builder.RegisterType<BusStopLoader>().As<IBusStopLoader>();
+
+            builder.RegisterType<FileDataReader>().As<IFileDataReader>().SingleInstance();
+            builder.Register(c=>c.Resolve<IFileDataReader>().ReadObject<Configuration>("Configuration.json"))
+                .As<IConfiguration>().SingleInstance();
+
             return builder.Build();
         }
     }

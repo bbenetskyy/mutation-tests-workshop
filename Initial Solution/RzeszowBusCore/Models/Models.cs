@@ -32,4 +32,16 @@ namespace RzeszowBusCore.Models
         public string Name { get; set; }
         public int Id2 { get; set; }
     }
+
+    public interface IConfiguration
+    {
+        string GetBusStopList { get; }
+        string GetMapBusStopList { get; }
+    }
+
+    public class Configuration: IConfiguration
+    {
+        public string GetBusStopList { get; set; }
+        public string GetMapBusStopList { get; set; }
+    }
 }
