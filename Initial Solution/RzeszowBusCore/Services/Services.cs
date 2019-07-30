@@ -28,8 +28,11 @@ namespace RzeszowBusCore.Services
 
         public MapBusLoader(IConfiguration configuration)
         {
-            if (string.IsNullOrWhiteSpace(configuration.GetMapBusStopList))
+            if (string.IsNullOrWhiteSpace(configuration?.GetMapBusStopList))
                 throw new ArgumentNullException(nameof(IConfiguration.GetMapBusStopList));
+            //todo :
+            //if (string.IsNullOrWhiteSpace(configuration.GetMapBusStopList))
+            //    throw new ArgumentNullException(nameof(IConfiguration.GetMapBusStopList));
 
             _mapStopListUrl = configuration.GetMapBusStopList;
         }

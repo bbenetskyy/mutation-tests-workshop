@@ -23,6 +23,21 @@ namespace RzeszowBusCore.Tests
             action.Should().Throw<ArgumentNullException>();
         }
 
+        [Fact]
+        public void Constructor_WhenArgsExist_ObjectCreated()
+        {
+            // Arrange
+            var configuration = new Configuration { GetMapBusStopList = nameof(Configuration.GetMapBusStopList) };
+            MapBusLoader busLoader = null;
+
+            // Act
+            Action action = () => busLoader = new MapBusLoader(configuration);
+
+            // Assert
+            action.Should().NotThrow<Exception>();
+            busLoader.Should().NotBeNull();
+        }
+
         public static IEnumerable<object[]> EmptyConfigurations => new List<IConfiguration[]>
         {
             new [] {(IConfiguration) null},
