@@ -1,6 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Threading.Tasks;
 using Autofac;
+using ConfigurationBuilder;
 using ConsoleTables;
 using McMaster.Extensions.CommandLineUtils;
 using RzeszowBusCore.Models;
@@ -12,26 +17,28 @@ namespace RzeszowBusApp
     {
         static IContainer Container { get; set; }
 
-        static void Main(string[] args)
+        static int Main(string[] args)
         {
-            //var app = new CommandLineApplication
-            //{
-            //    Name = "asasasd.dll",
-            //    ThrowOnUnexpectedArgument = false
-            //};
+            Container = ProductionBuild();
+            var app = new CommandLineApplication
+            {
+                Name = "BusApp.dll",
+                ThrowOnUnexpectedArgument = false
+            };
 
-            //app.HelpOption("-h|--help");
+            app.HelpOption("-h|--help");
 
-            //var optionBefore = app.Option<int>("-b|--before <N>", "asdasd", CommandOptionType.SingleValue);
-            //var optionAfter = app.Option<int>("-a|--after <N>", "asdasdasd", CommandOptionType.SingleValue);
-            //var optionFilter = app.Option<bool>("-f|--filter <B>", "asascascascas", CommandOptionType.SingleValue);
+            var getAllBusStops = app.Option("-bs|--bus-stops", "Get Bus Stops", CommandOptionType.NoValue);
 
-            //app.OnExecute(async () =>
-            //{
-            //    //var yourApp = new YourApp();
-            //});
+            app.OnExecute(async () =>
+            {
+                if (getAllBusStops.HasValue())
+                {
+                    await PrintBusStops();
+                }
+            });
 
-            //return app.Execute(args);
+            return app.Execute(args);
 
 
             //var table = new ConsoleTable("one", "two", "three");
@@ -48,22 +55,38 @@ namespace RzeszowBusApp
             //    .Configure(o => o.NumberAlignment = Alignment.Right)
             //    .Write(Format.Alternative);
 
-            Container = ProductionBuild();
-            var config = Container.Resolve<IConfiguration>();
+        }
+
+        static async Task PrintBusStops()
+        {
+            var busStopLoader = Container.Resolve<IBusStopLoader>();
+            var busStops = await busStopLoader.GetBusStopsAsync();
+
+            PrintResults(busStops);
+        }
+
+        private static void PrintResults<T>(List<T> list) where T : class
+        {
+            var table = new ConsoleTable(typeof(T).GetProperties().Select(x => x.Name).ToArray());
+            list.ForEach(x => table.AddRow(list));
+            table.Write();
         }
 
         static IContainer ProductionBuild()
         {
+            var codeBaseFolder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().CodeBase);
+            var config = new ConfigurationBuilder<Configuration>()
+                .FromFile(Path
+                    .Combine(codeBaseFolder, "Configuration.json")
+                    .Substring(codeBaseFolder.IndexOf('C')))
+                .AsJsonFormat()
+                .Build();
 
             var builder = new ContainerBuilder();
 
-            builder.RegisterType<FileDataReader>().As<IFileDataReader>();
             builder.RegisterType<MapBusLoader>().As<IMapBusLoader>();
             builder.RegisterType<BusStopLoader>().As<IBusStopLoader>();
-
-            builder.RegisterType<FileDataReader>().As<IFileDataReader>().SingleInstance();
-            builder.Register(c=>c.Resolve<IFileDataReader>().ReadObject<Configuration>("Configuration.json"))
-                .As<IConfiguration>().SingleInstance();
+            builder.Register(c => config).As<IConfiguration>().SingleInstance();
 
             return builder.Build();
         }

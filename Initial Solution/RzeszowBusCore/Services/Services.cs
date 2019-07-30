@@ -22,15 +22,18 @@ namespace RzeszowBusCore.Services
     {
         Task<List<BusStopCollection>> GetBusStopsAsync();
     }
-
-    public interface IFileDataReader
-    {
-        string ReadString(string fileName);
-        T ReadObject<T>(string fileName) where T : class;
-    }
-
     public class MapBusLoader : IMapBusLoader
     {
+        private string _mapStopListUrl;
+
+        public MapBusLoader(IConfiguration configuration)
+        {
+            if (string.IsNullOrWhiteSpace(configuration.GetMapBusStopList))
+                throw new ArgumentNullException(nameof(IConfiguration.GetMapBusStopList));
+
+            _mapStopListUrl = configuration.GetMapBusStopList;
+        }
+
         public Task<List<MapBusStop>> GetMapBusStopsAsync()
         {
             throw new NotImplementedException();
@@ -42,34 +45,6 @@ namespace RzeszowBusCore.Services
         public Task<List<BusStopCollection>> GetBusStopsAsync()
         {
             throw new NotImplementedException();
-        }
-    }
-
-    public class FileDataReader : IFileDataReader
-    {
-        public string ReadString(string fileName)
-        {
-            try
-            {
-                var codeBaseFolder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().CodeBase);
-                //todo maybe we need extention here?
-                var filePath = Path.Combine(codeBaseFolder, fileName).Substring(codeBaseFolder.IndexOf('C'));
-                using (var reader = new StreamReader(filePath))
-                {
-                    return reader.ReadToEnd();
-                }
-            }
-            catch (Exception e)
-            {
-                Debug.WriteLine($"{e.Message} : {e.StackTrace}");
-                return string.Empty;
-            }
-        }
-
-        public T ReadObject<T>(string fileName) where T : class
-        {
-            var json = ReadString(fileName);
-            return JsonConvert.DeserializeObject<T>(json);
         }
     }
 }

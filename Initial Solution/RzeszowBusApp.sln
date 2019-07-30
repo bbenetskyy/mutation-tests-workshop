@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RzeszowBusApp", ".\RzeszowB
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RzeszowBusCore", ".\RzeszowBusCore\RzeszowBusCore.csproj", "{05CB632D-CFD1-4E04-B089-65BD50D2E0F4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RzeszowBusCore.Tests", "RzeszowBusCore.Tests\RzeszowBusCore.Tests.csproj", "{8F5031A0-B85C-4A62-9B39-FEFC38E27C2F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{05CB632D-CFD1-4E04-B089-65BD50D2E0F4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{05CB632D-CFD1-4E04-B089-65BD50D2E0F4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{05CB632D-CFD1-4E04-B089-65BD50D2E0F4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8F5031A0-B85C-4A62-9B39-FEFC38E27C2F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8F5031A0-B85C-4A62-9B39-FEFC38E27C2F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8F5031A0-B85C-4A62-9B39-FEFC38E27C2F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8F5031A0-B85C-4A62-9B39-FEFC38E27C2F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
