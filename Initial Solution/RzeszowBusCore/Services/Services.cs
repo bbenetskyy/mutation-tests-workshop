@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Flurl.Http;
 using Newtonsoft.Json;
@@ -43,12 +44,40 @@ namespace RzeszowBusCore.Services
             foreach (var propValue in jsonNode)
             {
                 var prop = props[counter];
-                prop.SetValue(@object, System.Convert.ChangeType(propValue, prop.PropertyType));
+                if (IsSimpleType(prop.PropertyType))
+                    SimpleTypeConverter(ref @object, propValue, prop);
+                else
+                    CustomConverter(ref @object, propValue, prop);
                 counter++;
             }
 
             return @object;
         }
+
+        private void CustomConverter<T>(ref T @object, object propValue, PropertyInfo prop) where T : class, new()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SimpleTypeConverter<T>(ref T @object, dynamic propValue, PropertyInfo prop) where T : class, new()
+        {
+            if (!prop.PropertyType.IsPrimitive)
+            {
+                //todo structure
+                return;
+            }
+
+            //if (prop.PropertyType == typeof(Enum))
+            //{
+            //    return;
+            //}
+            //Int,String,Long...
+            prop.SetValue(@object, System.Convert.ChangeType(propValue, prop.PropertyType));
+        }
+
+        private bool IsSimpleType(Type propertyType)
+            => propertyType.IsValueType || propertyType == typeof(string);
+
 
         public List<T> ConvertList<T>(string jsonString) where T : class, new()
         {
