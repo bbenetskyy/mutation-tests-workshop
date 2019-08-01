@@ -19,4 +19,9 @@
   <ItemGroup>
     <ProjectReference Include="..\RzeszowBusCore\RzeszowBusCore.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <None Update="TestData\TestClass.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>

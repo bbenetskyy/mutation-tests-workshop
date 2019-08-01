@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Flurl.Http;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using RzeszowBusCore.Models;
 
 namespace RzeszowBusCore.Services
@@ -32,16 +33,20 @@ namespace RzeszowBusCore.Services
     {
         public T Convert<T>(string jsonString) where T : class, new()
         {
-            var json = JsonConvert.DeserializeObject(jsonString) as dynamic;
+            //var json = JsonConvert.DeserializeObject(jsonString) as dynamic;
+            var json = JToken.Parse(jsonString);
             return Convert<T>(json);
         }
 
-        public T Convert<T>(dynamic jsonNode) where T : class, new()
+        private T Convert<T>(JToken jToken) where T : class, new()
         {
             var @object = new T();
             var props = typeof(T).GetProperties();
             var counter = 0;
-            foreach (var propValue in jsonNode)
+
+            if (jToken.Type != JTokenType.Array) return @object;
+
+            foreach (var propValue in jToken)
             {
                 var prop = props[counter];
                 if (IsSimpleType(prop.PropertyType))
@@ -54,25 +59,78 @@ namespace RzeszowBusCore.Services
             return @object;
         }
 
-        private void CustomConverter<T>(ref T @object, object propValue, PropertyInfo prop) where T : class, new()
+        protected virtual void CustomConverter<T>(ref T @object, JToken valueToken, PropertyInfo prop)
+            where T : class, new()
         {
-            throw new NotImplementedException();
+            if (valueToken.Type != JTokenType.Array) return;
+
+            var type = GetType();
+            var method = type.GetMethod("Convert", BindingFlags.NonPublic | BindingFlags.Instance);
+            var genericMethod = method?.MakeGenericMethod(prop.PropertyType);
+            var value = genericMethod?.Invoke(this, new[] {valueToken});
+            prop.SetValue(@object, value);
         }
 
-        public void SimpleTypeConverter<T>(ref T @object, dynamic propValue, PropertyInfo prop) where T : class, new()
+        private void SimpleTypeConverter<T>(ref T @object, JToken valueToken, PropertyInfo prop) where T : class, new()
         {
-            if (!prop.PropertyType.IsPrimitive)
+            switch (valueToken.Type)
             {
-                //todo structure
-                return;
+                case JTokenType.Integer:
+                case JTokenType.Float:
+                    prop.SetValue(@object, System.Convert.ChangeType(valueToken, prop.PropertyType));
+                    break;
+                case JTokenType.String:
+                    if (prop.PropertyType.IsEnum)
+                    {
+                        prop.SetValue(@object, Enum.Parse(prop.PropertyType, valueToken.ToString(), true));
+                    }
+                    else if (prop.PropertyType == typeof(string))
+                    {
+                        prop.SetValue(@object, valueToken.Value<string>());
+                    }
+                    else if (prop.PropertyType == typeof(DateTime))
+                    {
+                        prop.SetValue(@object, System.Convert.ToDateTime(valueToken));
+                    }
+                    else if (prop.PropertyType == typeof(TimeSpan))
+                    {
+                        prop.SetValue(@object, System.Convert.ToDateTime(valueToken).TimeOfDay);
+                    }
+                    else if (prop.PropertyType == typeof(Guid))
+                    {
+                        prop.SetValue(@object, Guid.Parse(valueToken.Value<string>()));
+                    }
+                    else
+                    {
+                        //Int, Long, Float, Bool...
+                        prop.SetValue(@object, System.Convert.ChangeType(valueToken, prop.PropertyType));
+                    }
+                    break;
+                case JTokenType.Boolean:
+                    if (prop.PropertyType == typeof(bool))
+                    {
+                        prop.SetValue(@object, valueToken.Value<bool>());
+                    }
+                    break;
+                case JTokenType.Date:
+                    if (prop.PropertyType == typeof(DateTime))
+                    {
+                        prop.SetValue(@object, valueToken.Value<DateTime>());
+                    }
+                    break;
+                case JTokenType.Guid:
+                    if (prop.PropertyType == typeof(Guid))
+                    {
+                        prop.SetValue(@object, valueToken.Value<Guid>());
+                    }
+                    break;
+                case JTokenType.TimeSpan:
+                    if (prop.PropertyType == typeof(TimeSpan))
+                    {
+                        prop.SetValue(@object, valueToken.Value<TimeSpan>());
+                    }
+                    break;
             }
-
-            //if (prop.PropertyType == typeof(Enum))
-            //{
-            //    return;
-            //}
-            //Int,String,Long...
-            prop.SetValue(@object, System.Convert.ChangeType(propValue, prop.PropertyType));
         }
 
         private bool IsSimpleType(Type propertyType)
