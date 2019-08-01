@@ -28,13 +28,18 @@ namespace RzeszowBusApp
 
             app.HelpOption("-h|--help");
 
-            var getAllBusStops = app.Option("-bs|--bus-stops", "Get Bus Stops", CommandOptionType.NoValue);
+            var getAllBusStops = app.Option("-b|--bus-stops", "Get Bus Stops", CommandOptionType.NoValue);
+            var getAllMapBusStops = app.Option("-m|--map-bus-stops", "Get Map Bus Stops", CommandOptionType.NoValue);
 
             app.OnExecute(async () =>
             {
                 if (getAllBusStops.HasValue())
                 {
                     await PrintBusStops();
+                }
+                if (getAllMapBusStops.HasValue())
+                {
+                    await PrintMapBusStops();
                 }
             });
 
@@ -65,10 +70,19 @@ namespace RzeszowBusApp
             PrintResults(busStops);
         }
 
-        private static void PrintResults<T>(List<T> list) where T : class
+        static async Task PrintMapBusStops()
         {
-            var table = new ConsoleTable(typeof(T).GetProperties().Select(x => x.Name).ToArray());
-            list.ForEach(x => table.AddRow(list));
+            var busStopLoader = Container.Resolve<IMapBusLoader>();
+            var busStops = await busStopLoader.GetMapBusStopsAsync();
+
+            PrintResults(busStops);
+        }
+
+        private static void PrintResults<T>(List<T> list) where T : ITable
+        {
+            if (list == null || list.Count == 0) return;
+            var table = new ConsoleTable(list[0].GetColumns());
+            list.ForEach(x => table.AddRow(x.GetRow()));
             table.Write();
         }
 
@@ -84,8 +98,12 @@ namespace RzeszowBusApp
 
             var builder = new ContainerBuilder();
 
-            builder.RegisterType<MapBusLoader>().As<IMapBusLoader>();
-            builder.RegisterType<BusStopLoader>().As<IBusStopLoader>();
+            builder.RegisterType<MapBusLoader>().As<IMapBusLoader>()
+                .WithParameter((pi, c) => pi.ParameterType == typeof(IJsonToObjectConverter),
+                    (pi, c) => new MapBusJsonToObjectConverter());
+            builder.RegisterType<BusStopLoader>().As<IBusStopLoader>()
+                .WithParameter((pi, c) => pi.ParameterType == typeof(IJsonToObjectConverter),
+                    (pi, c) => new BaseJsonToObjectConverter());
             builder.Register(c => config).As<IConfiguration>().SingleInstance();
 
             return builder.Build();
