@@ -15,7 +15,7 @@ namespace RzeszowBusCore.Models
         public double Longitude { get; set; }
         public double Latitude { get; set; }
         public int Id3 { get; set; }
-        public List<Dictionary<int,Dictionary<int,string>>> Buses { get; set; }
+        public Dictionary<int, string> Buses { get; set; }
     }
 
     public class BusStopCollection
@@ -39,7 +39,7 @@ namespace RzeszowBusCore.Models
         string GetMapBusStopList { get; }
     }
 
-    public class Configuration: IConfiguration
+    public class Configuration : IConfiguration
     {
         public string GetBusStopList { get; set; }
         public string GetMapBusStopList { get; set; }

@@ -33,7 +33,6 @@ namespace RzeszowBusCore.Services
     {
         public T Convert<T>(string jsonString) where T : class, new()
         {
-            //var json = JsonConvert.DeserializeObject(jsonString) as dynamic;
             var json = JToken.Parse(jsonString);
             return Convert<T>(json);
         }
@@ -67,7 +66,7 @@ namespace RzeszowBusCore.Services
             var type = GetType();
             var method = type.GetMethod("Convert", BindingFlags.NonPublic | BindingFlags.Instance);
             var genericMethod = method?.MakeGenericMethod(prop.PropertyType);
-            var value = genericMethod?.Invoke(this, new[] {valueToken});
+            var value = genericMethod?.Invoke(this, new[] { valueToken });
             prop.SetValue(@object, value);
         }
 
@@ -136,7 +135,6 @@ namespace RzeszowBusCore.Services
         private bool IsSimpleType(Type propertyType)
             => propertyType.IsValueType || propertyType == typeof(string);
 
-
         public List<T> ConvertList<T>(string jsonString) where T : class, new()
         {
             var outList = new List<T>();
@@ -150,6 +148,39 @@ namespace RzeszowBusCore.Services
         }
     }
 
+    public class MapBusJsonToObjectConverter : BaseJsonToObjectConverter
+    {
+        protected override void CustomConverter<T>(ref T @object, JToken valueToken, PropertyInfo prop)
+        {
+            if (prop.PropertyType != typeof(Dictionary<int, string>) || !(@object is MapBusStop busStopObject))
+            {
+                base.CustomConverter(ref @object, valueToken, prop);
+                return;
+            }
+
+            var tokenList = GetDictionaryArray(valueToken);
+
+            busStopObject.Buses = new Dictionary<int, string>();
+
+            for (var i = 0; i < tokenList.Count; i += 2)
+            {
+                busStopObject.Buses.Add(tokenList[i].Value<int>(), tokenList[i + 1].Value<string>());
+            }
+        }
+
+        private List<JToken> GetDictionaryArray(JToken valueToken)
+        {
+            try
+            {
+                return valueToken[0][1].Children().ToList();
+            }
+            catch
+            {
+                return new List<JToken>();
+            }
+        }
+    }
+
     public class MapBusLoader : IMapBusLoader
     {
         private readonly IJsonToObjectConverter _converter;
@@ -160,9 +191,6 @@ namespace RzeszowBusCore.Services
             if (string.IsNullOrWhiteSpace(configuration?.GetMapBusStopList))
                 throw new ArgumentNullException(nameof(IConfiguration.GetMapBusStopList));
             _converter = converter;
-            //todo :
-            //if (string.IsNullOrWhiteSpace(configuration.GetMapBusStopList))
-            //    throw new ArgumentNullException(nameof(IConfiguration.GetMapBusStopList));
 
             _mapStopListUrl = configuration.GetMapBusStopList;
         }
@@ -180,7 +208,6 @@ namespace RzeszowBusCore.Services
                 Console.WriteLine(e);
                 throw;
             }
-            return new List<MapBusStop>();
         }
     }
 
