@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "RzeszowBusApp": {
+      "commandName": "Project",
+      "commandLineArgs": "-m"
+    }
+  }
+}
