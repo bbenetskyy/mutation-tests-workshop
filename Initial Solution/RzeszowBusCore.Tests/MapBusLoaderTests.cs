@@ -9,6 +9,8 @@ using FluentAssertions;
 using RzeszowBusCore.Models;
 using RzeszowBusCore.Services;
 using ConfigurationBuilder;
+using RzeszowBusCore.Converters;
+using RzeszowBusCore.Models.Abstract;
 
 namespace RzeszowBusCore.Tests
 {

@@ -8,8 +8,11 @@ using Autofac;
 using ConfigurationBuilder;
 using ConsoleTables;
 using McMaster.Extensions.CommandLineUtils;
+using RzeszowBusCore.Converters;
 using RzeszowBusCore.Models;
+using RzeszowBusCore.Models.Abstract;
 using RzeszowBusCore.Services;
+using RzeszowBusCore.Services.Abstract;
 
 namespace RzeszowBusApp
 {

@@ -1,33 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Dynamic;
-using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
-using Flurl.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using RzeszowBusCore.Models;
 
-namespace RzeszowBusCore.Services
+namespace RzeszowBusCore.Converters
 {
     //todo this should be moved to proper classes
-
-    public interface IMapBusLoader
-    {
-        Task<List<MapBusStop>> GetMapBusStopsAsync();
-    }
-
-    public interface IBusStopLoader
-    {
-        Task<List<BusStopCollection>> GetBusStopsAsync();
-    }
-
-    public interface IJsonToObjectConverter
-    {
-        T Convert<T>(string jsonString) where T : class, new();
-        List<T> ConvertList<T>(string jsonString) where T : class, new();
-    }
 
     public class BaseJsonToObjectConverter : IJsonToObjectConverter
     {
@@ -40,20 +19,34 @@ namespace RzeszowBusCore.Services
         private T Convert<T>(JToken jToken) where T : class, new()
         {
             var @object = new T();
-            var props = typeof(T).GetProperties();
-            var counter = 0;
-
             if (jToken.Type != JTokenType.Array) return @object;
 
-            foreach (var propValue in jToken)
+            if (typeof(T).IsGenericType && typeof(T).GetGenericTypeDefinition() == typeof(List<>))
             {
-                var prop = props[counter];
-                if (IsSimpleType(prop.PropertyType))
-                    SimpleTypeConverter(ref @object, propValue, prop);
-                else
+                var prop = typeof(T).GetProperties()[2];
+                foreach (var propValue in jToken)
+                {
                     CustomConverter(ref @object, propValue, prop);
-                counter++;
+                }
             }
+            else
+            {
+                var counter = 0;
+                var props = typeof(T).GetProperties();
+                foreach (var propValue in jToken)
+                {
+                    var prop = props[counter];
+                    if (IsSimpleType(prop.PropertyType))
+                        SimpleTypeConverter(ref @object, propValue, prop);
+                    else
+                        CustomConverter(ref @object, propValue, prop);
+                    counter++;
+                }
+            }
+
+            //var props = typeof(T).IsGenericType && typeof(T).GetGenericTypeDefinition() == typeof(List<>)
+            //    ? typeof(T).GetGenericArguments()[0].GetProperties()
+            //    : typeof(T).GetProperties();
 
             return @object;
         }
@@ -66,8 +59,15 @@ namespace RzeszowBusCore.Services
             var type = GetType();
             var method = type.GetMethod("Convert", BindingFlags.NonPublic | BindingFlags.Instance);
             var genericMethod = method?.MakeGenericMethod(prop.PropertyType);
-            var value = genericMethod?.Invoke(this, new[] { valueToken });
-            prop.SetValue(@object, value);
+            var value = genericMethod?.Invoke(this, new object[] { valueToken });
+            if (typeof(T).IsGenericType && typeof(T).GetGenericTypeDefinition() == typeof(List<>))
+            {
+                typeof(T).GetMethod("Add")?.Invoke(@object, new[] { value });
+            }
+            else
+            {
+                prop.SetValue(@object, value);
+            }
         }
 
         private void SimpleTypeConverter<T>(ref T @object, JToken valueToken, PropertyInfo prop) where T : class, new()
@@ -145,77 +145,6 @@ namespace RzeszowBusCore.Services
             }
 
             return outList;
-        }
-    }
-
-    public class MapBusJsonToObjectConverter : BaseJsonToObjectConverter
-    {
-        protected override void CustomConverter<T>(ref T @object, JToken valueToken, PropertyInfo prop)
-        {
-            if (prop.PropertyType != typeof(Dictionary<int, string>) || !(@object is MapBusStop busStopObject))
-            {
-                base.CustomConverter(ref @object, valueToken, prop);
-                return;
-            }
-
-            var tokenList = GetDictionaryArray(valueToken);
-
-            busStopObject.Buses = new Dictionary<int, string>();
-
-            for (var i = 0; i < tokenList.Count; i += 2)
-            {
-                busStopObject.Buses.Add(tokenList[i].Value<int>(), tokenList[i + 1].Value<string>());
-            }
-        }
-
-        private List<JToken> GetDictionaryArray(JToken valueToken)
-        {
-            try
-            {
-                return valueToken[0][1].Children().ToList();
-            }
-            catch
-            {
-                return new List<JToken>();
-            }
-        }
-    }
-
-    public class MapBusLoader : IMapBusLoader
-    {
-        private readonly IJsonToObjectConverter _converter;
-        private readonly string _mapStopListUrl;
-
-        public MapBusLoader(IConfiguration configuration, IJsonToObjectConverter converter)
-        {
-            if (string.IsNullOrWhiteSpace(configuration?.GetMapBusStopList))
-                throw new ArgumentNullException(nameof(IConfiguration.GetMapBusStopList));
-            _converter = converter;
-
-            _mapStopListUrl = configuration.GetMapBusStopList;
-        }
-
-        public async Task<List<MapBusStop>> GetMapBusStopsAsync()
-        {
-            try
-            {
-                var stop = new MapBusStop();
-                var jsonString = await _mapStopListUrl.GetStringAsync();
-                return _converter.ConvertList<MapBusStop>(jsonString);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                throw;
-            }
-        }
-    }
-
-    public class BusStopLoader : IBusStopLoader
-    {
-        public Task<List<BusStopCollection>> GetBusStopsAsync()
-        {
-            throw new NotImplementedException();
         }
     }
 }
