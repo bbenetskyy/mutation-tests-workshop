@@ -2,7 +2,7 @@
   "profiles": {
     "RzeszowBusApp": {
       "commandName": "Project",
-      "commandLineArgs": "-b -m"
+      "commandLineArgs": "-m -f pkp -b"
     }
   }
 }
