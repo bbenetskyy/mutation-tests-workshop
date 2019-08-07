@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace RzeszowBusCore.Converters
+namespace RzeszowBusCore.Converters.Abstract
 {
     public interface IJsonToObjectConverter
     {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -9,16 +10,22 @@ using ConfigurationBuilder;
 using ConsoleTables;
 using McMaster.Extensions.CommandLineUtils;
 using RzeszowBusCore.Converters;
+using RzeszowBusCore.Converters.Abstract;
 using RzeszowBusCore.Models;
 using RzeszowBusCore.Models.Abstract;
 using RzeszowBusCore.Services;
 using RzeszowBusCore.Services.Abstract;
+using RzeszowBusCore.ViewModels;
+using RzeszowBusCore.ViewModels.Abstract;
 
 namespace RzeszowBusApp
 {
     class Program
     {
-        static IContainer Container { get; set; }
+        private static IContainer Container;
+        private static List<string> Filters = new List<string>();
+        private static int MaxLength;
+        static bool TrimEnabled => MaxLength > 0;
 
         static int Main(string[] args)
         {
@@ -33,13 +40,26 @@ namespace RzeszowBusApp
 
             var getAllBusStops = app.Option("-b|--bus-stops", "Get Bus Stops", CommandOptionType.NoValue);
             var getAllMapBusStops = app.Option("-m|--map-bus-stops", "Get Map Bus Stops", CommandOptionType.NoValue);
+            var filter = app.Option("-f|--filter", "Filter By Stop", CommandOptionType.MultipleValue);
+            var trim = app.Option("-t|--trim", "Cut Output Values", CommandOptionType.SingleValue);
 
             app.OnExecute(async () =>
             {
+                if (filter.HasValue())
+                {
+                    Filters.AddRange(filter.Values);
+                }
+
+                if (trim.HasValue())
+                {
+                    int.TryParse(trim.Value(), out MaxLength);
+                }
+
                 if (getAllBusStops.HasValue())
                 {
                     await PrintBusStops();
                 }
+
                 if (getAllMapBusStops.HasValue())
                 {
                     await PrintMapBusStops();
@@ -47,28 +67,24 @@ namespace RzeszowBusApp
             });
 
             return app.Execute(args);
-
-
-            //var table = new ConsoleTable("one", "two", "three");
-            //table.AddRow(1, 2, 3)
-            //    .AddRow("this line should be longer", "yes it is", "oh");
-
-            //table.Write();
-            //Console.WriteLine();
-
-            //var rows = Enumerable.Repeat(new Something(), 10);
-
-            //ConsoleTable
-            //    .From<Something>(rows)
-            //    .Configure(o => o.NumberAlignment = Alignment.Right)
-            //    .Write(Format.Alternative);
-
         }
 
         static async Task PrintBusStops()
         {
             var busStopLoader = Container.Resolve<IBusStopLoader>();
             var busStops = await busStopLoader.GetBusStopsAsync();
+
+            if (Filters.Count != 0)
+            {
+                var busStopFilter = Container.Resolve<IFilter<BusStopCollectionViewModel>>();
+                busStops = busStopFilter.FilterBy(busStops, Filters);
+            }
+
+            if (TrimEnabled)
+            {
+                var busStopFilter = Container.Resolve<ITrim<BusStopCollectionViewModel>>();
+                busStops = busStopFilter.Trim(busStops, MaxLength);
+            }
 
             PrintResults(busStops);
         }
@@ -77,6 +93,18 @@ namespace RzeszowBusApp
         {
             var busStopLoader = Container.Resolve<IMapBusLoader>();
             var busStops = await busStopLoader.GetMapBusStopsAsync();
+
+            if (Filters.Count != 0)
+            {
+                var busStopFilter = Container.Resolve<IFilter<MapBusStopViewModel>>();
+                busStops = busStopFilter.FilterBy(busStops, Filters);
+            }
+
+            if (TrimEnabled)
+            {
+                var busStopFilter = Container.Resolve<ITrim<MapBusStopViewModel>>();
+                busStops = busStopFilter.Trim(busStops, MaxLength);
+            }
 
             PrintResults(busStops);
         }
@@ -104,10 +132,18 @@ namespace RzeszowBusApp
             builder.RegisterType<MapBusLoader>().As<IMapBusLoader>()
                 .WithParameter((pi, c) => pi.ParameterType == typeof(IJsonToObjectConverter),
                     (pi, c) => new MapBusJsonToObjectConverter());
+
             builder.RegisterType<BusStopLoader>().As<IBusStopLoader>()
                 .WithParameter((pi, c) => pi.ParameterType == typeof(IJsonToObjectConverter),
                     (pi, c) => new BaseJsonToObjectConverter());
+
             builder.Register(c => config).As<IConfiguration>().SingleInstance();
+
+            builder.RegisterType<MapBusStopTrim>().As<ITrim<MapBusStopViewModel>>();
+            builder.RegisterType<MapBusStopFilter>().As<IFilter<MapBusStopViewModel>>();
+
+            builder.RegisterType<BusStopCollectionTrim>().As<ITrim<BusStopCollectionViewModel>>();
+            builder.RegisterType<BusStopCollectionFilter>().As<IFilter<BusStopCollectionViewModel>>();
 
             return builder.Build();
         }

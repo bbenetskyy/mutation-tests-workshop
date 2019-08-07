@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using RzeszowBusCore.Converters.Abstract;
 
 namespace RzeszowBusCore.Converters
 {
@@ -43,10 +44,6 @@ namespace RzeszowBusCore.Converters
                     counter++;
                 }
             }
-
-            //var props = typeof(T).IsGenericType && typeof(T).GetGenericTypeDefinition() == typeof(List<>)
-            //    ? typeof(T).GetGenericArguments()[0].GetProperties()
-            //    : typeof(T).GetProperties();
 
             return @object;
         }

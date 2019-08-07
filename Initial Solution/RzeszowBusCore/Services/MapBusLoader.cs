@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Flurl.Http;
 using RzeszowBusCore.Converters;
+using RzeszowBusCore.Converters.Abstract;
 using RzeszowBusCore.Models;
 using RzeszowBusCore.Models.Abstract;
 using RzeszowBusCore.Services.Abstract;
+using RzeszowBusCore.ViewModels;
 
 namespace RzeszowBusCore.Services
 {
@@ -23,12 +26,16 @@ namespace RzeszowBusCore.Services
             _mapStopListUrl = configuration.GetMapBusStopList;
         }
 
-        public async Task<List<MapBusStop>> GetMapBusStopsAsync()
+        public async Task<List<MapBusStopViewModel>> GetMapBusStopsAsync()
         {
             try
             {
                 var jsonString = await _mapStopListUrl.GetStringAsync();
-                return _converter.ConvertList<MapBusStop>(jsonString);
+                var stops = _converter.ConvertList<MapBusStop>(jsonString);
+                return stops.Select(x => new MapBusStopViewModel
+                {
+                    Model = x
+                }).ToList();
             }
             catch (Exception e)
             {

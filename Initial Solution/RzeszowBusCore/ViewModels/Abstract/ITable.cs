@@ -1,4 +1,4 @@
-﻿namespace RzeszowBusCore.Models.Abstract
+﻿namespace RzeszowBusCore.ViewModels.Abstract
 {
     public interface ITable
     {
