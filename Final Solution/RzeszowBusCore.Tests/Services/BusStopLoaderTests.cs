@@ -49,7 +49,8 @@ namespace RzeszowBusCore.Tests.Services
             Action action = () => new BusStopLoader(configuration, null);
 
             // Assert
-            action.Should().Throw<ArgumentNullException>();
+            action.Should().Throw<ArgumentNullException>()
+                .And.ParamName.Should().Be(nameof(IConfiguration.GetBusStopList));
         }
 
         [Fact]

@@ -20,7 +20,7 @@ namespace RzeszowBusCore.Services
         public MapBusLoader(IConfiguration configuration, IJsonToObjectConverter converter)
         {
             if (string.IsNullOrWhiteSpace(configuration?.GetMapBusStopList))
-                throw new ArgumentNullException("GetMapBusStopList");
+                throw new ArgumentNullException(nameof(IConfiguration.GetMapBusStopList));
             _converter = converter;
 
             _mapStopListUrl = configuration.GetMapBusStopList;

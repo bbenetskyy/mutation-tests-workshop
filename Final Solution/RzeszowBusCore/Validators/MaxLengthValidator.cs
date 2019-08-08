@@ -9,7 +9,7 @@ namespace RzeszowBusCore.Validators
         public static string TrimToMaxLength(this string text, int maxLength) =>
             string.IsNullOrWhiteSpace(text)
                 ? string.Empty
-                : text.Length <= maxLength
+                : text.Length + 1 <= maxLength
                     ? text
                     : text.Substring(0, maxLength);
     }

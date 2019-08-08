@@ -10,11 +10,7 @@ namespace RzeszowBusCore.Converters
     {
         protected override void CustomConverter<T>(ref T @object, JToken valueToken, PropertyInfo prop)
         {
-            if (prop.PropertyType != typeof(Dictionary<int, string>) || !(@object is MapBusStop busStopObject))
-            {
-                base.CustomConverter(ref @object, valueToken, prop);
-                return;
-            }
+            var busStopObject = @object as MapBusStop ?? new MapBusStop();
 
             var tokenList = GetDictionaryArray(valueToken);
 

@@ -13,9 +13,11 @@ namespace RzeszowBusCore.Tests.Services
     public class MapBusStopTrimTests
     {
         [Theory]
-        [InlineData(10, 5)]
+        [InlineData(7, 5)]
+        [InlineData(6, 5)]
         [InlineData(5, 5)]
-        [InlineData(5, 10)]
+        [InlineData(5, 6)]
+        [InlineData(5, 7)]
         public void Trim_TrimProperParameters_OutListHaveTrimmedValues(int stringLength, int maxLength)
         {
             // Arrange

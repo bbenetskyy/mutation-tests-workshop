@@ -14,8 +14,8 @@ namespace RzeszowBusCore.ViewModels
             => new[] { "Id", "Title", "Buses Count" };
 
         public string[] GetRow()
-            => new[] { Model.Id.ToString(), Model.Title, Model.SimpleBusStops.Count.ToString() };
+            => new[] { Model?.Id.ToString(), Model?.Title, Model?.SimpleBusStops.Count.ToString() };
 
-        public bool HaveInnerTable() => Model.SimpleBusStops.Count > 0;
+        public bool HaveInnerTable() => Model?.SimpleBusStops?.Count > 0;
     }
 }

@@ -54,12 +54,12 @@ namespace RzeszowBusCore.Converters
             if (valueToken.Type != JTokenType.Array) return;
 
             var type = GetType();
-            var method = type.GetMethod("Convert", BindingFlags.NonPublic | BindingFlags.Instance);
+            var method = type.GetMethod(nameof(Convert), BindingFlags.NonPublic | BindingFlags.Instance);
             var genericMethod = method?.MakeGenericMethod(prop.PropertyType);
             var value = genericMethod?.Invoke(this, new object[] { valueToken });
             if (typeof(T).IsGenericType && typeof(T).GetGenericTypeDefinition() == typeof(List<>))
             {
-                typeof(T).GetMethod("Add")?.Invoke(@object, new[] { value });
+                typeof(T).GetMethod(nameof(List<T>.Add))?.Invoke(@object, new[] { value });
             }
             else
             {
@@ -106,24 +106,6 @@ namespace RzeszowBusCore.Converters
                     if (prop.PropertyType == typeof(bool))
                     {
                         prop.SetValue(@object, valueToken.Value<bool>());
-                    }
-                    break;
-                case JTokenType.Date:
-                    if (prop.PropertyType == typeof(DateTime))
-                    {
-                        prop.SetValue(@object, valueToken.Value<DateTime>());
-                    }
-                    break;
-                case JTokenType.Guid:
-                    if (prop.PropertyType == typeof(Guid))
-                    {
-                        prop.SetValue(@object, valueToken.Value<Guid>());
-                    }
-                    break;
-                case JTokenType.TimeSpan:
-                    if (prop.PropertyType == typeof(TimeSpan))
-                    {
-                        prop.SetValue(@object, valueToken.Value<TimeSpan>());
                     }
                     break;
             }

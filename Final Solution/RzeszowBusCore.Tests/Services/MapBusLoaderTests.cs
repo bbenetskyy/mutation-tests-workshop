@@ -49,7 +49,8 @@ namespace RzeszowBusCore.Tests.Services
             Action action = () => new MapBusLoader(configuration, null);
 
             // Assert
-            action.Should().Throw<ArgumentNullException>();
+            action.Should().Throw<ArgumentNullException>()
+                .And.ParamName.Should().Be(nameof(IConfiguration.GetMapBusStopList));
         }
 
         [Fact]
@@ -98,6 +99,7 @@ namespace RzeszowBusCore.Tests.Services
 
             // Assert
             mapBusStops.Should().HaveCountGreaterThan(1);
+            mapBusStops.First().Model.Buses.Should().HaveCountGreaterOrEqualTo(1);
         }
 
         public static IEnumerable<object[]> EmptyConfigurations => new List<IConfiguration[]>

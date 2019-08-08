@@ -16,10 +16,10 @@ namespace RzeszowBusCore.ViewModels
         public string[] GetRow()
             => new[]
             {
-                Model.Id.ToString(), Model.LongName, Model.ShortName, Model.Longitude.ToString(), Model.Latitude.ToString(),
-                Model.Buses.Keys.Count.ToString()
+                Model?.Id.ToString(), Model?.LongName, Model?.ShortName, Model?.Longitude.ToString(), Model?.Latitude.ToString(),
+                Model?.Buses.Keys.Count.ToString()
             };
 
-        public bool HaveInnerTable() => Model.Buses.Keys.Count > 0;
+        public bool HaveInnerTable() => Model?.Buses?.Keys.Count > 0;
     }
 }
