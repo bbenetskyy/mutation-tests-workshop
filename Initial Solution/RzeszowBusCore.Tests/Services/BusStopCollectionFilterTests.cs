@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 using FluentAssert;
 using FluentAssertions;
 using RzeszowBusCore.Services;
@@ -9,8 +7,9 @@ using Xunit;
 
 namespace RzeszowBusCore.Tests.Services
 {
-    public class MapBusStopFilterTests
+    public class BusStopCollectionFilterTests
     {
+
         [Theory]
         [InlineData("a", 1)]
         [InlineData("Lon", 1)]
@@ -27,10 +26,10 @@ namespace RzeszowBusCore.Tests.Services
         public void FilterBy_FilterAccordingToFilter_FilteredListHaveExpectedCount(string filter, int filteredCount)
         {
             // Arrange
-            var busFilter = new MapBusStopFilter();
+            var busFilter = new BusStopCollectionFilter();
 
             // Act
-            var filteredList = busFilter.FilterBy(FilterTestData.MapBusStops, new List<string> { filter });
+            var filteredList = busFilter.FilterBy(FilterTestData.BusStopCollection, new List<string> { filter });
 
             // Assert
             filteredList.ShouldNotBeNull();

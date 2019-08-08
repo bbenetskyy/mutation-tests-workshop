@@ -28,20 +28,12 @@ namespace RzeszowBusCore.Services
 
         public async Task<List<BusStopCollectionViewModel>> GetBusStopsAsync()
         {
-            try
+            var jsonString = await _busStopListUrl.GetStringAsync();
+            var collections = _converter.ConvertList<BusStopCollection>(jsonString);
+            return collections.Select(x => new BusStopCollectionViewModel
             {
-                var jsonString = await _busStopListUrl.GetStringAsync();
-                var collections = _converter.ConvertList<BusStopCollection>(jsonString);
-                return collections.Select(x => new BusStopCollectionViewModel
-                {
-                    Model = x
-                }).ToList();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                throw;
-            }
+                Model = x
+            }).ToList();
         }
     }
 }
