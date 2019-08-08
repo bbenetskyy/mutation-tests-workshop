@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace RzeszowBusCore.Tests
+namespace RzeszowBusCore.Tests.TestData.Models
 {
     public class ConverterTestClass
     {

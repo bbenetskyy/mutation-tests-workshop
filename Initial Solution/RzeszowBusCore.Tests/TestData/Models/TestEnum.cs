@@ -1,4 +1,4 @@
-﻿namespace RzeszowBusCore.Tests
+﻿namespace RzeszowBusCore.Tests.TestData.Models
 {
     public enum TestEnum
     {

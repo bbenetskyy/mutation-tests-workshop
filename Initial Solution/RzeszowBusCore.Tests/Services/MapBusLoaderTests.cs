@@ -4,24 +4,47 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Xunit;
-using FluentAssertions;
-using RzeszowBusCore.Models;
-using RzeszowBusCore.Services;
+using Autofac;
 using ConfigurationBuilder;
+using FluentAssert;
+using FluentAssertions;
 using RzeszowBusCore.Converters;
+using RzeszowBusCore.Converters.Abstract;
+using RzeszowBusCore.Models;
 using RzeszowBusCore.Models.Abstract;
+using RzeszowBusCore.Services;
+using RzeszowBusCore.Services.Abstract;
+using RzeszowBusCore.ViewModels;
+using Xunit;
 
-namespace RzeszowBusCore.Tests
+namespace RzeszowBusCore.Tests.Services
 {
     public class MapBusLoaderTests
     {
+        private IContainer _container;
+
+        public MapBusLoaderTests()
+        {
+            var codeBaseFolder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().CodeBase);
+            var configuration = new ConfigurationBuilder<Configuration>()
+                .FromFile(Path
+                    .Combine(codeBaseFolder, "Configuration.json")
+                    .Substring(codeBaseFolder.IndexOf('C')))
+                .AsJsonFormat()
+                .Build();
+
+            var builder = new ContainerBuilder();
+
+            builder.Register(c => configuration).As<IConfiguration>().SingleInstance();
+            builder.RegisterType<MapBusJsonToObjectConverter>().As<IJsonToObjectConverter>();
+
+            _container = builder.Build();
+        }
+
         [Theory]
         [MemberData(nameof(MapBusLoaderTests.EmptyConfigurations), MemberType = typeof(MapBusLoaderTests))]
         public void Constructor_WhenArgsIsEmpty_ThrowArgumentNullException(IConfiguration configuration)
         {
-            // Arrange
-
             // Act
             Action action = () => new MapBusLoader(configuration, null);
 
@@ -49,14 +72,7 @@ namespace RzeszowBusCore.Tests
         public void Constructor_WhenArgsExist_CorrectUrlSaved()
         {
             // Arrange
-            //todo add IoC here in tests
-            var codeBaseFolder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().CodeBase);
-            var configuration = new ConfigurationBuilder<Configuration>()
-                .FromFile(Path
-                    .Combine(codeBaseFolder, "Configuration.json")
-                    .Substring(codeBaseFolder.IndexOf('C')))
-                .AsJsonFormat()
-                .Build();
+            var configuration = _container.Resolve<IConfiguration>();
 
             // Act
             var busLoader = new MapBusLoader(configuration, null);
@@ -73,15 +89,8 @@ namespace RzeszowBusCore.Tests
         public async Task GetMapBusStopsAsync_WithProductionConfiguration_MapBusStopListReturned()
         {
             // Arrange
-            var codeBaseFolder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().CodeBase);
-            var configuration = new ConfigurationBuilder<Configuration>()
-                .FromFile(Path
-                    .Combine(codeBaseFolder, "Configuration.json")
-                    .Substring(codeBaseFolder.IndexOf('C')))
-                .AsJsonFormat()
-                .Build();
-            //todo add IoC here in tests
-            var converter = new MapBusJsonToObjectConverter();
+            var configuration = _container.Resolve<IConfiguration>();
+            var converter = _container.Resolve<IJsonToObjectConverter>();
             var busLoader = new MapBusLoader(configuration, converter);
 
             // Act

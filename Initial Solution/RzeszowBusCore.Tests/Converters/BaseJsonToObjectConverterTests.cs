@@ -1,15 +1,11 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using FluentAssert;
+﻿using System.IO;
 using FluentAssertions;
-using Newtonsoft.Json;
 using RzeszowBusCore.Converters;
-using RzeszowBusCore.Services;
 using RzeszowBusCore.Tests.TestData;
+using RzeszowBusCore.Tests.TestData.Models;
 using Xunit;
 
-namespace RzeszowBusCore.Tests
+namespace RzeszowBusCore.Tests.Converters
 {
     public class BaseJsonToObjectConverterTests
     {
